@@ -1,0 +1,10 @@
+{
+  "description": "KOSIS 여가활동 통계를 인구·가구 특성과 지역별로 시각화해, 문화예술 관람 참여 추이를 쉽게 비교하고 분석할 수 있습니다.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
