@@ -15,29 +15,29 @@ const activities: {
   short: string
   color: string
 }[] = [
-  { key: "movie", label: "영화관람", short: "영화", color: "#3d63e7" },
-  { key: "museum", label: "박물관 관람", short: "박물관", color: "#5f7bea" },
-  { key: "art", label: "미술관 관람", short: "미술관", color: "#748deb" },
+  { key: "movie", label: "영화관람", short: "영화", color: "#00b7ff" },
+  { key: "museum", label: "박물관 관람", short: "박물관", color: "#22c1f6" },
+  { key: "art", label: "미술관 관람", short: "미술관", color: "#42caed" },
   {
     key: "entertainment",
     label: "연예공연 관람",
     short: "연예공연",
-    color: "#43a28c",
+    color: "#08a9e8",
   },
-  { key: "theater", label: "연극공연 관람", short: "연극", color: "#e17b55" },
+  { key: "theater", label: "연극공연 관람", short: "연극", color: "#61d2e5" },
   {
     key: "concert",
     label: "음악연주회 관람",
     short: "음악회",
-    color: "#d8a23c",
+    color: "#1c98d2",
   },
   {
     key: "traditional",
     label: "전통예술공연 관람",
     short: "전통예술",
-    color: "#a279ca",
+    color: "#77dced",
   },
-  { key: "dance", label: "무용공연 관람", short: "무용", color: "#dd7397" },
+  { key: "dance", label: "무용공연 관람", short: "무용", color: "#4bb5d2" },
 ]
 
 const rawRows: [string, string, number, ...Array<number | null>][] = [
