@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
   return {
     base: process.env.FIGMA_PUBLIC_URL
       ? `${process.env.FIGMA_PUBLIC_URL}/`
-      : "/",
+      : "/Genie/",
     envDir: path.resolve(__dirname, ".."),
     build: {
       sourcemap: emitSourcemaps ? "inline" : false,
