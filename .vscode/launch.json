@@ -8,6 +8,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "localhost에 대해 Chrome 시작",
+            "preLaunchTask": "Vite 개발 서버 시작",
             "url": "http://localhost:8443",
             "webRoot": "${workspaceFolder}"
         }

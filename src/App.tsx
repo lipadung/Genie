@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 
 type ActivityKey = "movie" | "museum" | "art" | "entertainment" | "theater" | "concert" | "traditional" | "dance"
 
@@ -7,6 +8,62 @@ type Row = {
   label: string
   sample: number
   values: Record<ActivityKey, number | null>
+}
+
+type Reading = {
+  id: string
+  created_at: string
+  value: number
+}
+
+type ReadingsDatabase = {
+  public: {
+    Tables: {
+      readings: {
+        Row: {
+          id: number
+          created_at: string
+          temp: number | null
+          humi: number | null
+          value: number
+        }
+        Insert: {
+          id?: number
+          created_at?: string
+          temp?: number | null
+          humi?: number | null
+          value: number
+        }
+        Update: {
+          id?: number
+          created_at?: string
+          temp?: number | null
+          humi?: number | null
+          value?: number
+        }
+        Relationships: []
+      }
+    }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
+  }
+}
+
+type RealtimeStatus = "connecting" | "connected" | "error"
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const cachedSupabaseClient = import.meta.hot?.data
+  .supabaseClient as SupabaseClient<ReadingsDatabase> | undefined
+const supabaseClient: SupabaseClient<ReadingsDatabase> | null =
+  supabaseUrl && supabaseAnonKey
+    ? (cachedSupabaseClient ??
+      createClient<ReadingsDatabase>(supabaseUrl, supabaseAnonKey))
+    : null
+if (import.meta.hot && supabaseClient) {
+  import.meta.hot.data.supabaseClient = supabaseClient
 }
 
 const activities: {
@@ -225,10 +282,166 @@ function DownloadIcon() {
   )
 }
 
+function ReadingsChart({ values }: { values: number[] }) {
+  if (values.length === 0) {
+    return (
+      <div className="serial-chart-empty">
+        readings 테이블에 데이터가 들어오면 그래프가 표시됩니다.
+      </div>
+    )
+  }
+
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const range = Math.max(max - min, 1)
+  const points = values
+    .map((value, index) => {
+      const x = values.length === 1 ? 500 : (index / (values.length - 1)) * 1000
+      const y = 230 - ((value - min) / range) * 200
+      return `${x},${y}`
+    })
+    .join(" ")
+
+  return (
+    <div className="serial-chart-wrap">
+      <div className="serial-chart-scale" aria-hidden="true">
+        <span>{max.toLocaleString()}</span>
+        <span>{((min + max) / 2).toLocaleString()}</span>
+        <span>{min.toLocaleString()}</span>
+      </div>
+      <svg
+        className="serial-chart"
+        viewBox="0 0 1000 250"
+        preserveAspectRatio="none"
+        role="img"
+        aria-label={`최근 ${values.length}개 Supabase 값 선 그래프`}
+      >
+        {[30, 130, 230].map((y) => (
+          <line
+            key={y}
+            x1="0"
+            x2="1000"
+            y1={y}
+            y2={y}
+            className="serial-chart-gridline"
+          />
+        ))}
+        <polyline points={points} className="serial-chart-line" />
+      </svg>
+    </div>
+  )
+}
+
 function App() {
   const [selectedGroup, setSelectedGroup] = useState("연령별")
   const [selectedActivity, setSelectedActivity] = useState<ActivityKey>("movie")
   const [sortHigh, setSortHigh] = useState(true)
+  const [readings, setReadings] = useState<Reading[]>([])
+  const [realtimeStatus, setRealtimeStatus] =
+    useState<RealtimeStatus>("connecting")
+  const [readingsError, setReadingsError] = useState("")
+
+  useEffect(() => {
+    if (!supabaseClient) {
+      setRealtimeStatus("error")
+      setReadingsError(
+        "VITE_SUPABASE_URL 또는 VITE_SUPABASE_ANON_KEY 환경 변수가 설정되지 않았습니다.",
+      )
+      return
+    }
+
+    let active = true
+    const supabase = supabaseClient
+    const mergeReadings = (incoming: Reading[]) => {
+      if (!active) return
+      setReadings((current) => {
+        const byId = new Map(
+          [...current, ...incoming].map((reading) => [reading.id, reading]),
+        )
+        const latest = [...byId.values()]
+          .sort(
+            (a, b) =>
+              a.created_at.localeCompare(b.created_at) ||
+              a.id.localeCompare(b.id),
+          )
+          .slice(-100)
+        return latest
+      })
+    }
+    const parseReading = (row: unknown): Reading | null => {
+      if (typeof row !== "object" || row === null) return null
+      const record = row as Record<string, unknown>
+      const value = Number(record.value)
+      if (
+        typeof record.id !== "number" ||
+        typeof record.created_at !== "string" ||
+        !Number.isFinite(value)
+      ) {
+        return null
+      }
+      return {
+        id: String(record.id),
+        created_at: record.created_at,
+        value,
+      }
+    }
+    const loadLatestReadings = async () => {
+      const { data, error } = await supabase
+        .from("readings")
+        .select("id, created_at, value")
+        .order("created_at", { ascending: false })
+        .limit(100)
+
+      if (!active) return
+      if (error) {
+        setRealtimeStatus("error")
+        setReadingsError(`최근 데이터를 불러오지 못했습니다: ${error.message}`)
+        return
+      }
+
+      const rows = (data ?? [])
+        .map(parseReading)
+        .filter((row): row is Reading => row !== null)
+      mergeReadings(rows)
+      setReadingsError("")
+    }
+    const channel = supabase
+      .channel("readings-dashboard")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "readings" },
+        (payload) => {
+          const reading = parseReading(payload.new)
+          if (reading) {
+            mergeReadings([reading])
+            setReadingsError("")
+          } else {
+            setReadingsError(
+              "Realtime에서 읽을 수 없는 데이터 형식이 왔습니다.",
+            )
+          }
+        },
+      )
+      .subscribe((status, error) => {
+        if (!active) return
+        if (status === "SUBSCRIBED") {
+          setRealtimeStatus("connected")
+          setReadingsError("")
+          void loadLatestReadings()
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          setRealtimeStatus("error")
+          setReadingsError(
+            error?.message ??
+              "Supabase Realtime 구독에 실패했습니다. 테이블의 Realtime 설정을 확인하세요.",
+          )
+        }
+      })
+
+    return () => {
+      active = false
+      void supabase.removeChannel(channel)
+    }
+  }, [])
 
   const activeActivity = activities.find(
     (activity) => activity.key === selectedActivity,
@@ -295,6 +508,7 @@ function App() {
           <a className="active" href="#overview">
             전체 현황
           </a>
+          <a href="#serial">실시간 데이터</a>
           <a href="#compare">분류별 비교</a>
           <a href="#table">데이터 표</a>
         </nav>
@@ -339,6 +553,81 @@ function App() {
               <small>개</small>
             </div>
           </div>
+        </section>
+
+        <section className="section serial-section" id="serial">
+          <div className="section-heading">
+            <div>
+              <span className="section-number">LIVE</span>
+              <h2>Supabase 실시간 데이터</h2>
+            </div>
+            <p>readings 테이블의 최신 값과 실시간 수신 데이터</p>
+          </div>
+
+          <article className="panel serial-panel">
+            <div className="serial-toolbar">
+              <div>
+                <span className="label">SUPABASE · READINGS</span>
+                <h3>실시간 센서 데이터</h3>
+                <p>
+                  최근 100개를 불러오고 새 데이터는 Realtime으로 반영합니다.
+                </p>
+              </div>
+              <span
+                className={`realtime-badge ${realtimeStatus}`}
+                role="status"
+              >
+                <i />
+                {realtimeStatus === "connected"
+                  ? "실시간 연결됨"
+                  : realtimeStatus === "connecting"
+                    ? "연결 중..."
+                    : "연결 오류"}
+              </span>
+            </div>
+
+            {readingsError && (
+              <p className="serial-message error" role="alert">
+                {readingsError}
+              </p>
+            )}
+
+            <div className="serial-dashboard">
+              <div className="serial-current-card">
+                <span>현재값</span>
+                <strong>
+                  {readings.length
+                    ? readings[readings.length - 1]?.value.toLocaleString()
+                    : "—"}
+                </strong>
+                <small>
+                  {readings.length
+                    ? `수신 시각 ${new Date(readings[readings.length - 1]!.created_at).toLocaleTimeString()}`
+                    : "데이터 대기 중"}
+                </small>
+              </div>
+              <div className="serial-chart-card">
+                <div className="serial-chart-header">
+                  <div>
+                    <span className="mini-label">LIVE DATA</span>
+                    <h3>최근 100개 값</h3>
+                  </div>
+                  <span>{readings.length} / 100개</span>
+                </div>
+                <ReadingsChart
+                  values={readings.map((reading) => reading.value)}
+                />
+                <div className="serial-chart-caption">
+                  <span>오래된 값</span>
+                  <span>최근 값</span>
+                </div>
+              </div>
+            </div>
+            <p className="serial-footnote">
+              초기 로드 시 created_at 기준 최신 100개를 표시합니다. 새 행은
+              Supabase Realtime 구독으로 바로 추가됩니다.
+            </p>
+          </article>
         </section>
 
         <section className="section" id="overview">

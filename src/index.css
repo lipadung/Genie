@@ -333,6 +333,276 @@ main {
   box-shadow: 0 5px 20px rgb(23 32 51 / 3%);
 }
 
+.serial-section {
+  padding-top: 40px;
+}
+
+.serial-panel {
+  padding: 27px 30px 20px;
+}
+
+.serial-toolbar,
+.serial-chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.serial-toolbar h3,
+.serial-chart-header h3 {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.serial-toolbar p {
+  margin-top: 8px;
+  color: #858da0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.realtime-badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  color: #81899a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.realtime-badge i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a7afbd;
+}
+
+.realtime-badge.connected {
+  border-color: #bdebd7;
+  background: #f2fcf7;
+  color: #29855b;
+}
+
+.realtime-badge.connected i {
+  background: #36b77a;
+  box-shadow: 0 0 0 3px rgb(54 183 122 / 12%);
+}
+
+.realtime-badge.connecting {
+  background: #fbfcfe;
+}
+
+.realtime-badge.error {
+  border-color: #f0d1cf;
+  background: #fff7f6;
+  color: #a6413c;
+}
+
+.realtime-badge.error i {
+  background: #d76b63;
+}
+
+.serial-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 136px;
+  padding: 11px 16px;
+  border: 1px solid var(--color-primary);
+  border-radius: 9px;
+  background: var(--color-primary);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    opacity 150ms ease;
+}
+
+.serial-button:hover:not(:disabled) {
+  border-color: #009bd8;
+  background: #009bd8;
+}
+
+.serial-button.connected {
+  border-color: #e6a1a1;
+  background: white;
+  color: #bf5555;
+}
+
+.serial-button.connected:hover:not(:disabled) {
+  background: #fff5f5;
+}
+
+.serial-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.serial-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.serial-button.connected .serial-status-dot {
+  box-shadow: 0 0 0 3px rgb(255 255 255 / 28%);
+}
+
+.serial-dashboard {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.32fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-top: 23px;
+}
+
+.serial-current-card,
+.serial-chart-card {
+  min-width: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  background: #fbfcfe;
+}
+
+.serial-current-card {
+  display: flex;
+  min-height: 225px;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px;
+}
+
+.serial-current-card > span {
+  color: #858da0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.serial-current-card strong {
+  overflow: hidden;
+  margin: 11px 0 6px;
+  color: #173c54;
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  text-overflow: ellipsis;
+}
+
+.serial-current-card small {
+  color: #9299a8;
+  font-size: 11px;
+}
+
+.serial-chart-card {
+  padding: 20px 22px 14px;
+  background: white;
+}
+
+.serial-chart-header {
+  align-items: center;
+}
+
+.serial-chart-header .mini-label {
+  margin-bottom: 4px;
+  color: var(--color-primary);
+}
+
+.serial-chart-header > span {
+  color: #9299a8;
+  font-size: 11px;
+}
+
+.serial-chart-wrap {
+  display: grid;
+  height: 140px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 9px;
+  margin-top: 17px;
+}
+
+.serial-chart-scale {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3px 0 9px;
+  color: #9299a8;
+  font-size: 9px;
+  text-align: right;
+}
+
+.serial-chart {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.serial-chart-gridline {
+  stroke: #edf0f5;
+  stroke-dasharray: 4 5;
+  stroke-width: 1;
+}
+
+.serial-chart-line {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.serial-chart-empty {
+  display: grid;
+  height: 140px;
+  place-items: center;
+  margin-top: 17px;
+  border-radius: 8px;
+  background:
+    linear-gradient(#edf0f5 1px, transparent 1px) 0 0 / 100% 50%,
+    #fbfcfe;
+  color: #969dad;
+  font-size: 11px;
+  text-align: center;
+}
+
+.serial-chart-caption {
+  display: flex;
+  justify-content: space-between;
+  margin: 5px 0 0 51px;
+  color: #a0a6b3;
+  font-size: 9px;
+}
+
+.serial-message {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.serial-message.error {
+  background: #fff4f3;
+  color: #a6413c;
+}
+
+.serial-footnote {
+  margin-top: 13px;
+  color: #9299a8;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
 .overview-chart,
 .ranking-chart {
   padding: 29px 33px 31px;
@@ -917,6 +1187,14 @@ footer > span {
     grid-template-columns: 1fr;
   }
 
+  .serial-dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .serial-current-card {
+    min-height: 160px;
+  }
+
   .insight-card {
     display: grid;
     grid-template-columns: 120px 1fr;
@@ -997,6 +1275,35 @@ footer > span {
   .overview-chart,
   .ranking-chart {
     padding: 23px 18px 25px;
+  }
+
+  .serial-panel {
+    padding: 20px 16px 16px;
+  }
+
+  .serial-toolbar {
+    flex-direction: column;
+  }
+
+  .serial-button {
+    width: 100%;
+  }
+
+  .serial-current-card {
+    min-height: 145px;
+    padding: 20px;
+  }
+
+  .serial-chart-card {
+    padding: 17px 14px 12px;
+  }
+
+  .serial-chart-wrap {
+    grid-template-columns: 35px minmax(0, 1fr);
+  }
+
+  .serial-chart-caption {
+    margin-left: 44px;
   }
 
   .activity-row {
