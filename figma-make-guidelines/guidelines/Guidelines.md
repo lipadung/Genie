@@ -1,6 +1,6 @@
 # IoT 조명 웹앱 기본 프레임
 
-센서값에 반응하는 조명 제품의 웹, 스마트폰 화면이다. 검은 바탕 정가운데에 센서값과 연동된 달이 떠 있다. 데이터 흐름: 센서 → ESP32 → Supabase → 이 웹앱.
+센서값에 반응하는 조명 제품의 웹, 스마트폰 화면이다. 검은 바탕 정가운데에 센서값과 연동된 마법사 모자가 떠 있다. 데이터 흐름: 센서 → ESP32 → Supabase → 이 웹앱.
 이 문서 하나에 모든 규칙이 있다. 아래 Setup, Tokens, styles, 컴포넌트 섹션을 모두 따른다.
 
 ## 반드시 지킬 시각 규칙
@@ -24,30 +24,30 @@
 
 ## 제품 슬롯 (학생이 채우는 칸)
 
-제품 이름, 컨셉, 설명은 `src/product.ts`의 `PRODUCT` 객체 한 곳에서만 정의하고 화면은 거기서 읽는다. 비어 있으면 `[제품 이름]` 같은 자리표시를 `--ink-muted`로 보여준다.
+제품 이름, 컨셉, 설명은 `src/product.ts`의 `PRODUCT` 객체 한 곳에서만 정의하고 화면은 거기서 읽는다. 기본 제품은 Genie Lamp이며, 센서에 호흡을 불어넣으면 조명이 켜지고 센서값에 따라 마법사 모자 모양에 빛이 들어온다. 비어 있으면 `[제품 이름]` 같은 자리표시를 `--ink-muted`로 보여준다.
 
 | 슬롯 | 위치 |
 | --- | --- |
 | 제품 이름 | `PRODUCT.name` |
 | 제품 컨셉 (한 줄) | `PRODUCT.concept` |
 | 제품 설명 (2~3문장) | `PRODUCT.description` |
-| 메인 컬러 | globals.css의 `--brand`, `--on-brand`. 기본값 블루 |
-| 폰트 | globals.css의 `--font-sans`(메인, 기본값 Pretendard), `--font-display`(서브, 기본값 Rising CHAI). 서브는 제품 이름과 센서값 숫자에만 |
+| 메인 컬러 | globals.css의 `--brand`, `--on-brand`. Genie Lamp은 `#AF1276` |
+| 폰트 | globals.css의 `--font-sans`, `--font-display`. Genie Lamp은 Pretendard |
 
 ## 기능
 
 | 기능 | 컴포넌트 | 데이터 |
 | --- | --- | --- |
-| 센서값에 따라 밝아지는 달 (검은 바탕 정가운데) | SensorMoon | 최신 `sensor_readings.value` |
+| 센서값에 따라 빛나는 마법사 모자 (검은 바탕 정가운데) | WizardHat | 최신 `sensor_readings.value` |
 | 센서값 플롯 | SensorChart | 최근 60개 + realtime INSERT |
 | LED 전원 on/off | PowerToggle | `device_state.led_on` 업데이트 |
 | 센서 연결, 끊기 | ConnectionControl | realtime 채널 구독, 해제 |
-| 반응형 | AppShell | 768px 기준. 웹은 달 아래 컨트롤과 차트 2열 |
+| 반응형 | AppShell | 768px 기준. 웹은 모자 아래 컨트롤과 차트 2열 |
 | 제품 정보 | ProductHeader | `PRODUCT` |
 
 "센서 연결"은 Supabase realtime 채널을 구독하는 동작이다. 블루투스나 시리얼은 쓰지 않으므로 iOS 포함 모든 스마트폰에서 동작한다.
 
 ## 응용 범위
 
-- 바꿔도 됨: 제품 슬롯, 달 이미지(정사각, 투명 배경), 센서 범위와 단위, 차트 포인트 수, 섹션 추가.
+- 바꿔도 됨: 제품 슬롯, 제품 오브제 이미지(정사각, 투명 배경), 센서 범위와 단위, 차트 포인트 수, 섹션 추가.
 - 바꾸면 안 됨: 위 시각 규칙과 동작 규칙, 상태 구조, Supabase 테이블 이름과 컬럼.
